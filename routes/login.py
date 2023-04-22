@@ -1,20 +1,18 @@
-from flask import  jsonify, request, Blueprint
+from flask import jsonify, request, Blueprint
 from pymongo import MongoClient
-from flask_jwt_extended import  create_access_token
+from flask_jwt_extended import create_access_token
 
 import os
-
 
 client = MongoClient(
     f"mongodb+srv://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@cluster0.acrcjxy.mongodb.net/?retryWrites=true&w=majority")
 mydb = client['miniproject']
 
+login = Blueprint('login', __name__)
 
-
-login = Blueprint('login',__name__)
 
 @login.route('/login', methods=['POST'])
-def authlogin():
+def auth_login():
     print('username ')
     mycol = mydb["users"]
     try:
@@ -27,6 +25,6 @@ def authlogin():
             return jsonify({'status': 401, 'message': 'Login failed'})
     except Exception as e:
         return jsonify({
-            'status':501,
-            'message':'internal server'
+            'status': 501,
+            'message': 'internal server'
         })

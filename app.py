@@ -4,8 +4,7 @@ from pymongo import MongoClient
 from flask_jwt_extended import JWTManager
 import os
 
-from .Routes import login, suspects, add_suspect
-
+from .routes import login, suspects
 
 app = Flask(__name__)
 app.config['PORT'] = 5000
@@ -14,15 +13,14 @@ CORS(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 JWT = JWTManager(app)
 
-
-
 app.register_blueprint(login.login)
 app.register_blueprint(suspects.suspects)
-app.register_blueprint(add_suspect.add_suspect)
+
 
 @app.route('/')
 def home():
     return "You are on suspect detection backend root route "
+
 
 if __name__ == '__main__':
     print("running...")
