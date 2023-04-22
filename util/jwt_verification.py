@@ -1,4 +1,3 @@
-from pymongo import MongoClient
 import os
 import jwt
 from .database import mydb
@@ -10,18 +9,18 @@ def jwt_verification(access_token):
 
         if mydb.users.find_one({'username': data['sub']}):
             return {
-                'status': 201,
+                'status': 1,
                 'message': 'user found',
                 'username': data['sub']
-            }
+            },201
         else:
             return {
-                'status': 401,
-                'message': 'You are not authorised to perform this action...kindly Login again'
-            }
+                'status': 0,
+                'message': 'unauthorized user'
+            },404
     except Exception as e:
 
         return {
-            'status': 401,
-            'message': 'Session Expired...Login again'
-        }
+            'status': 0,
+            'message': 'Session Expired'
+        },404

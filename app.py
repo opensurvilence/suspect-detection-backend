@@ -3,7 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from .routes import login, suspects
+from .routes import login, suspects, user
 
 app = Flask(__name__)
 app.config['PORT'] = 5000
@@ -14,6 +14,7 @@ JWT = JWTManager(app)
 
 app.register_blueprint(login.login)
 app.register_blueprint(suspects.suspects)
+app.register_blueprint(user.user)
 
 
 @app.route('/')
