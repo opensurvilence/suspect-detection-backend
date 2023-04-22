@@ -13,7 +13,7 @@ def deleteUser():
     data = request.json
     if not data:
         return {
-            'status': 1,
+            'status': 0,
             'message': 'missing form data'
         }, 404
 
@@ -24,24 +24,27 @@ def deleteUser():
     verification = jwt_verification(access_token=access_token)
     print("verification : ", verification)
     # veri_data= json.loads(verification.get_json())
-    if verification['status'] != 201:
-        return jsonify(verification)
+    if verification['status'] == 0:
+        return {
+            'status':0,
+            'message':'user verfication failed'
+        },403
 
     if 'users' not in mydb.list_collection_names():
         mydb.create_collection('users')
 
     user = mydb.users.find_one({'email': email})
     if user is None:
-        return jsonify({
-            "status": 404,
-            "message": "User does not exist."
-        })
+        return {
+            "status": 0,
+            "message": "user not found with given email"
+        },404
     else:
         mydb.users.delete_one({'email': email})
-        return jsonify({
-            "status": 200,
+        return {
+            "status": 1,
             "message": "User deleted successfully."
-        })
+        },200
 
 
 @user.route('/user/add', methods=['POST'])
@@ -63,8 +66,11 @@ def addUser():
     verification = jwt_verification(access_token=access_token)
     print("verification : ", verification)
     # veri_data= json.loads(verification.get_json())
-    if verification['status'] != 201:
-        return jsonify(verification)
+    if verification['status'] == 0:
+        return {
+            'status':0,
+            'message':'user verfication failed'
+        },403
 
     if 'users' not in mydb.list_collection_names():
         mydb.create_collection('users')
@@ -79,12 +85,12 @@ def addUser():
     user_id = mydb.users.insert_one(user_data)
 
     if user_id:
-        return jsonify({
-            'status': 200,
+        return {
+            'status': 1,
             'message': 'user added successfully',
             'userId': user_id
-        })
-    return jsonify({
-        'status': 401,
+        },200
+    return {
+        'status': 0,
         'message': 'user addition failed'
-    })
+    },400
