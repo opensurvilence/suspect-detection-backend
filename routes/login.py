@@ -1,12 +1,10 @@
+import json
+
 from flask import jsonify, request, Blueprint
 from pymongo import MongoClient
 from flask_jwt_extended import create_access_token
-
+from ..util.database import mydb
 import os
-
-client = MongoClient(
-    f"mongodb+srv://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@cluster0.acrcjxy.mongodb.net/?retryWrites=true&w=majority")
-mydb = client['miniproject']
 
 login = Blueprint('login', __name__)
 
@@ -14,6 +12,10 @@ login = Blueprint('login', __name__)
 @login.route('/login', methods=['POST'])
 def auth_login():
     print('username ')
+
+    if 'users' not in mydb.list_collection_names():
+        mydb.create_collection('users')
+
     mycol = mydb["users"]
     try:
         username = request.json['username']
