@@ -1,21 +1,52 @@
-from flask import  jsonify, request, Blueprint
-
-from pymongo import MongoClient
-from bson.binary import Binary
+from bson import Binary
+from flask import jsonify, request, Blueprint
+from ..util.database import mydb
+from schema import suspect_schema
+from ..util.jwt_verification import jwt_verification
 import os
-from ..Utilities.jwt_verification import jwt_verification
-from ..schema import suspect_schema 
 
-client = MongoClient(
-    f"mongodb+srv://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@cluster0.acrcjxy.mongodb.net/?retryWrites=true&w=majority")
-mydb = client['miniproject']
+suspects = Blueprint('suspects', __name__)
 
 
-add_suspect = Blueprint('add_suspect', __name__)
+@suspects.route('/suspects', methods=['GET'])
+def get_suspects():
+    access_token = request.headers['ACCESS_TOKEN']
+    # print("Access token ", access_token)
+    verification = jwt_verification(access_token=access_token)
+
+    if verification['status'] != 201:
+        return jsonify(verification)
+
+    if 'suspects' not in mydb.list_collection_names():
+        mydb.create_collection('suspects')
+    data = mydb.suspects.find({})
+    data1 = []
+    for d in data:
+        data1.append(d)
+
+    print("data  =  ", data1, type(data1))
+    return jsonify({"status": 0, "data": data1})
 
 
-@add_suspect.route('/add/suspect', methods=['POST'])
-def createSuspect():
+@suspects.route('/suspects/<string:id>', methods=['GET'])
+def get_suspect(id):
+    access_token = request.headers['ACCESS_TOKEN']
+    verification = jwt_verification(access_token=access_token)
+
+    if verification['status'] != 201:
+        return jsonify(verification)
+
+    if 'suspects' not in mydb.list_collection_names():
+        mydb.create_collection('suspects')
+    data = mydb['suspects'].find({'username': id})
+    data1 = []
+    for d in data:
+        data1.append(d)
+    return jsonify({"status": 0, "data": data1})
+
+
+@suspects.route('/add/suspect', methods=['POST'])
+def create_suspect():
     name = request.json['name']
     age = request.json['age']
     gender = request.json['gender']
