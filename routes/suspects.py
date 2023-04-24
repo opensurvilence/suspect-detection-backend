@@ -1,8 +1,8 @@
 from bson import Binary
 from flask import jsonify, request, Blueprint
 from ..util.database import mydb
-from schema import suspect_schema
-from ..util.jwt_verification import jwt_verification
+from ..schema import suspect_schema
+from ..util.jwt_verification import verify_user,verify_admin
 import os
 
 suspects = Blueprint('suspects', __name__)
@@ -12,13 +12,13 @@ suspects = Blueprint('suspects', __name__)
 def get_suspects():
     access_token = request.headers['ACCESS_TOKEN']
     # print("Access token ", access_token)
-    verification = jwt_verification(access_token=access_token)
+    verification = verify_user(access_token=access_token)
 
-    if verification['status'] == 0:
-        return {
+    if verification[0]['status'] == 0:
+        return jsonify({
             'status': 0,
             'message': 'invalid token or session expired'
-        }, 401
+        })
 
     if 'suspects' not in mydb.list_collection_names():
         mydb.create_collection('suspects')
@@ -28,19 +28,22 @@ def get_suspects():
         data1.append(d)
 
     # print("data  =  ", data1, type(data1))
-    return {
+    return jsonify({
         "status": 1,
         "data": data1
-    }, 200
+    })
 
 
 @suspects.route('/suspects/<string:id>', methods=['GET'])
 def get_suspect(id):
     access_token = request.headers['ACCESS_TOKEN']
-    verification = jwt_verification(access_token=access_token)
+    verification = verify_user(access_token=access_token)
 
-    if verification['status'] == 0:
-        return jsonify(verification)
+    if verification[0]['status'] == 0:
+        return jsonify({
+        "status": 0,
+        "message": "user verfication failed"
+    })
 
     if 'suspects' not in mydb.list_collection_names():
         mydb.create_collection('suspects')
@@ -48,20 +51,20 @@ def get_suspect(id):
     data1 = []
     for d in data:
         data1.append(d)
-    return {
+    return jsonify({
         "status": 1,
         "data": data1
-    }, 200
+    })
 
 
 @suspects.route('/add/suspect', methods=['POST'])
 def create_suspect():
     data = request.json
     if not data:
-        return {
+        return jsonify({
             'status': 0,
             'message': 'missing request',
-        }, 404
+        })
 
     name = data['name']
     age = data['age']
@@ -73,14 +76,14 @@ def create_suspect():
     remark = info['remark']
     access_token = request.headers['ACCESS_TOKEN']
 
-    verification = jwt_verification(access_token=access_token)
+    verification = verify_user(access_token=access_token)
     # print("verification : ", verification)
     # veri_data= json.loads(verification.get_json())
     if verification['status'] == 0:
-        return {
+        return jsonify({
             'status':0,
             'message':'user verification failed'
-        },403
+        })
 
     if 'suspects' not in mydb.list_collection_names():
         mydb.create_collection('suspects')
@@ -101,19 +104,19 @@ def create_suspect():
     }
     for key, value in suspect_schema.items():
         if key not in user_data and key == image:
-            return {
+            return jsonify({
                 'status': 0,
                 'message': 'missing suspect image'
-            }, 400
+            })
 
     suspect_id = mydb.suspects.insert_one(data)
     if suspect_id:
-        return {
+        return jsonify({
             'status': 1,
             'message': 'suspect added successfully',
             'suspectId': suspect_id
-        }, 200
-    return {
+        })
+    return jsonify({
         'status': 0,
         'message': 'suspect addition failed'
-    }, 400
+    })
