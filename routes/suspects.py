@@ -112,6 +112,7 @@ def get_suspects():
         "status": 1,
         "data": data1
     })
+
 @suspects.route('/api/img', methods=['POST'])
 def suspect_detection():
     video_file = request.files['video']

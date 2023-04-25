@@ -24,6 +24,11 @@ def home():
     return "You are on suspect detection backend root route "
 
 
+@app.route('/flask')
+def flask():
+    return "You are on the flask route "
+
+
 if __name__ == '__main__':
     print("running...")
     app.run(host='0.0.0.0', debug=True)

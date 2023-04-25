@@ -47,8 +47,6 @@ def deleteUser():
             "status": 1,
             "message": "User deleted successfully."
         })
-     
-
 
 @user.route('/user/add', methods=['POST'])
 def addUser():
