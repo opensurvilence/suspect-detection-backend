@@ -8,10 +8,10 @@ from ..util.jwt_verification import verify_admin, verify_user
 user = Blueprint('user', __name__)
 
 
-@user.route('/user/delete', methods=['GET','POST'])
+@user.route('/user/delete', methods=['GET'])
 def deleteUser():
     data = request.json
-    print("delete route")
+    print("delete route... ")
     if not data:
         return jsonify({
             'status': 0,
@@ -19,24 +19,23 @@ def deleteUser():
         })
 
     email = data['email']
-    print("step ",1)
+    
     access_token = request.headers['ACCESS_TOKEN']
 
     verification = verify_admin(access_token=access_token)
-    print("verification of the admin : ", verification)
-    print("step ",2)
+   
     # veri_data= json.loads(verification.get_json())
     if verification[0]['status'] == 0:
         return jsonify({
             'status':0,
             'message':'user verfication failed'
         })
-    print("step ",3)
+  
     if 'users' not in mydb.list_collection_names():
         mydb.create_collection('users')
-    print("step ",4)
+   
     user = mydb.users.find_one({'email': email})
-    print("users with given email" , user)
+    
     if user is None:
         return jsonify({
             "status": 0,
@@ -48,7 +47,6 @@ def deleteUser():
             "status": 1,
             "message": "User deleted successfully."
         })
-
 
 @user.route('/user/add', methods=['POST'])
 def addUser():
